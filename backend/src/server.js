@@ -25,7 +25,30 @@ const app = express();
 
 // Middleware
 app.use(express.json()); // Parses incoming JSON requests
-app.use(cors({ origin: 'http://localhost:5173', credentials: true })); // Allows frontend to talk to backend
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        process.env.NODE_ENV !== 'production'
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+  })
+);
 app.use(cookieParser()); // Parses cookies (useful if we store JWT in cookies)
 
 app.use('/api/auth', authRoutes);

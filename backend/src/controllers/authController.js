@@ -11,8 +11,8 @@ export const registerPatient = async (req, res) => {
     const user = await User.create({ name, email, phone, password, role: 'Patient', isApproved: true });
     
     // Log them in immediately
-    generateToken(res, user._id, user.role);
-    res.status(201).json({ _id: user._id, name: user.name, role: user.role });
+    const token = generateToken(res, user._id, user.role);
+    res.status(201).json({ _id: user._id, name: user.name, role: user.role, token });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -62,8 +62,8 @@ export const loginUser = async (req, res) => {
         return res.status(403).json({ message: 'Your account is pending Admin approval.' });
       }
 
-      generateToken(res, user._id, user.role);
-      res.status(200).json({ _id: user._id, name: user.name, role: user.role });
+      const token = generateToken(res, user._id, user.role);
+      res.status(200).json({ _id: user._id, name: user.name, role: user.role, token });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
     }

@@ -5,13 +5,17 @@ const generateToken = (res, userId, role) => {
     expiresIn: '30d', // Token lasts for 30 days
   });
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   // Set JWT as HTTP-Only cookie
   res.cookie('jwt', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV !== 'development', // Use secure cookies in production (HTTPS)
-    sameSite: 'strict', // Prevents CSRF attacks
+    secure: isProduction, // Use secure cookies in production (HTTPS)
+    sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-domain Vercel <-> Render
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
+
+  return token;
 };
 
 export default generateToken;
